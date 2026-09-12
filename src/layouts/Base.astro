@@ -1,0 +1,327 @@
+---
+const { title = 'AI carbon & water footprint calculator', description = '', canonicalUrl = '', ogTitle = title, ogImage = '/images/og/og-ai-prompt-footprint.png', ogImageAlt = 'Andy Masley AI calculator', keywords = [], structuredData = [] } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords.join(', ')} />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:alt" content={ogImageAlt} />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href={canonicalUrl} />
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+</head>
+<body>
+  <slot />
+</body>
+</html>
+
+<style is:global>
+:root {
+  --font-sans: "Inter", "Avenir Next", Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --page-bg: #f8f6ee;
+  --page-text: #1e2a2d;
+  --page-muted: #617578;
+  --line: #bcae8c;
+  --card: #fffefb;
+  --paper: #f7f3e7;
+  --sage: #788d6c;
+  --sage-dark: #465c40;
+  --sage-soft: #c9d7bc;
+  --clay: #b77552;
+  --clay-dark: #7f563d;
+  --blue: #476981;
+  --serif: var(--font-serif);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--page-text);
+  background: var(--page-bg);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+a { color: var(--sage-dark); }
+
+a:hover { color: var(--clay-dark); }
+
+.aipf {
+  width: min(1180px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 32px 0 72px;
+  color: var(--page-text);
+}
+
+.aipf-header {
+  padding: 12px 0 20px;
+}
+
+.aipf-title {
+  margin: 0 0 12px;
+  font-family: var(--font-serif);
+  font-size: clamp(42px, 5vw, 70px);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+
+.aipf-dek {
+  max-width: 940px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--page-muted);
+  margin: 0;
+}
+
+.aipf-toolbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.aipf-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aipf-toggle-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.aipf-showing {
+  display: flex;
+  gap: 8px;
+}
+
+.aipf-metric,
+.aipf-report-btn,
+.aipf-addrow,
+.aipf-link {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 8px 14px;
+  background: var(--card);
+  color: var(--page-text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.aipf-metric.is-active {
+  color: var(--card);
+  background: var(--sage-dark);
+}
+
+.aipf-report-btn {
+  background: var(--sage-dark);
+  color: white;
+  border: none;
+  font-weight: 700;
+}
+
+.aipf-tool {
+  display: grid;
+  grid-template-columns: minmax(380px, 0.95fr) minmax(450px, 1.05fr);
+  gap: 24px;
+  align-items: stretch;
+  margin-top: 26px;
+}
+
+.aipf-in,
+.aipf-out {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.aipf-in-head,
+.aipf-out-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.aipf-in-head {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 2vw, 30px);
+  margin-bottom: 12px;
+}
+
+.aipf-in-sub {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--page-muted);
+  text-transform: uppercase;
+}
+
+.aipf-rows-head {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 44px;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--page-muted);
+  text-transform: uppercase;
+}
+
+.aipf-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 44px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.aipf-row select,
+.aipf-row input {
+  width: 100%;
+  padding: 7px 8px;
+  font: inherit;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.aipf-row button {
+  background: transparent;
+  border: none;
+  color: var(--clay);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.aipf-addrow {
+  background: var(--sage-soft);
+  margin: 10px 0 0;
+}
+
+.aipf-running {
+  font-size: 12px;
+  color: var(--page-muted);
+}
+
+.aipf-writes {
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.aipf-writes-h {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 15px;
+}
+
+.aipf-words {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.aipf-hint,
+.aipf-fine {
+  font-size: 11px;
+  color: var(--page-muted);
+}
+
+.aipf-out {
+  min-height: 360px;
+}
+
+.aipf-life {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--page-text);
+}
+
+.aipf-verdict {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 2.8vw, 55px);
+  line-height: 1.1;
+  color: var(--sage-dark);
+  padding: 16px 0;
+}
+
+.aipf-mini {
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.aipf-chart-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--page-muted);
+}
+
+.aipf-bars {
+  min-height: 60px;
+}
+
+.aipf-below {
+  margin-top: 26px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+}
+
+.aipf-h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 3vw, 42px);
+}
+
+.aipf-sub {
+  font-size: 14px;
+  color: var(--page-muted);
+}
+
+.aipf-method {
+  border-top: 1px solid var(--line);
+  margin-top: 40px;
+}
+
+.aipf-method summary {
+  padding: 16px 0;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.aipf-method-body {
+  padding: 0 0 24px;
+  color: var(--page-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 860px) {
+  .aipf-tool { grid-template-columns: 1fr; }
+  .aipf-row, .aipf-rows-head { grid-template-columns: 1fr 1fr 1fr 42px; }
+}
+</style>
+</html>
