@@ -208,6 +208,16 @@ const structuredData = [
           </p>
         </div>
         <div class="aipf-verdict" id="aipf-headline" aria-live="polite"></div>
+        <section class="aipf-tips-panel" id="aipf-tips-panel">
+          <div class="aipf-tips-panel-head">
+            <h2 class="aipf-tips-title">Ways to reduce your AI footprint</h2>
+          </div>
+          <div class="aipf-tips-panel-body">
+            <div class="aipf-tips-level" id="aipf-tips-level" aria-live="polite"></div>
+            <ul class="aipf-tips-list" id="aipf-tips-list" aria-live="polite"></ul>
+            <p class="aipf-tips-estimate">These results are estimates.</p>
+          </div>
+        </section>
         <div class="aipf-projection-card" id="aipf-projection-card">
           <div class="aipf-projection-head">
             <span class="aipf-projection-title">Your AI usage projection</span>
@@ -923,6 +933,65 @@ const structuredData = [
       else box.textContent = 'Water is blue water only: freshwater drawn from rivers, lakes, and aquifers. Green rainwater (most of food’s footprint) is excluded.';
     }
 
+    function renderTipsPanel() {
+      const list = root.querySelector('#aipf-tips-list');
+      const level = root.querySelector('#aipf-tips-level');
+      const ai = aiDaily(state.metric);
+      const day = dailyFootprint(state.metric);
+      const pct = day > 0 ? (ai / day) * 100 : 0;
+      let usageLevel = 'Low';
+      if (pct >= 0.05 && pct <= 0.25) usageLevel = 'Moderate';
+      else if (pct > 0.25) usageLevel = 'Higher';
+
+      const tips = state.metric === 'carbon'
+        ? {
+            low: [
+              'Keep replies short when a shorter answer can do the job.',
+              'Combine related questions into one prompt when possible.',
+              'Choose a smaller model when it can handle the task.'
+            ],
+            moderate: [
+              'Ask for a shorter answer if the extra detail is not needed.',
+              'Combine related questions into one prompt before sending another one.',
+              'Avoid unnecessary retries and choose a smaller model when it can do the task.'
+            ],
+            high: [
+              'Try a smaller model or a shorter answer when the task can be handled that way.',
+              'Group related questions instead of sending several prompts.',
+              'Avoid retries and review whether a response can be shortened before sending.'
+            ]
+          }
+        : {
+            low: [
+              'Keep replies short when a shorter answer can do the job.',
+              'Combine related questions into one prompt when possible.',
+              'Choose a smaller model when it can handle the task.'
+            ],
+            moderate: [
+              'Ask for a shorter answer if the extra detail is not needed.',
+              'Combine related questions into one prompt before sending another one.',
+              'Avoid unnecessary retries and choose a smaller model when it can do the task.'
+            ],
+            high: [
+              'Try a smaller model or a shorter answer when the task can be handled that way.',
+              'Group related questions instead of sending several prompts.',
+              'Avoid retries and review whether a response can be shortened before sending.'
+            ]
+          };
+
+      const key = usageLevel.toLowerCase();
+      if (list) {
+        list.innerHTML = '';
+        const items = tips[key];
+        for (const item of items) {
+          const li = document.createElement('li');
+          li.textContent = item;
+          list.appendChild(li);
+        }
+      }
+      if (level) level.innerHTML = 'Usage level: <span class="aipf-tips-level-name">' + usageLevel + '</span>';
+    }
+
     function renderProjection() {
       const box = root.querySelector('#aipf-projection-total');
       const total = aiDaily(state.metric);
@@ -1012,7 +1081,7 @@ const structuredData = [
     }
 
     function updateOutputs() {
-      renderRunning(); updateRowMeta(); renderHeadline(); renderGridNote(); renderWords(); renderDaily(); renderAnnualSplit(); renderProjection(); renderProjectionButtons(); renderPresetToggle();
+      renderRunning(); updateRowMeta(); renderHeadline(); renderGridNote(); renderTipsPanel(); renderWords(); renderDaily(); renderAnnualSplit(); renderProjection(); renderProjectionButtons(); renderPresetToggle();
     }
     // ---- Cited report ----
     function escXml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -1290,6 +1359,16 @@ const structuredData = [
   .aipf-prop-fill { height: 100%; background: var(--accent); min-width: 3px; }
   .aipf-prop-cap { display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--dim); margin-top: 0.35rem; }
   .aipf-prop-cap .accent { color: var(--accent); font-weight: 600; }
+
+  .aipf-tips-panel { margin: 0.75rem 0 1rem; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-elevated); padding: 0.85rem 0.95rem; }
+  .aipf-tips-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
+  .aipf-tips-title { font-family: var(--font-editorial); font-weight: 600; font-size: 1rem; letter-spacing: -0.01em; color: var(--text); margin: 0; }
+  .aipf-tips-panel-body { margin-top: 0.5rem; }
+  .aipf-tips-level { font-family: var(--font-body); font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); }
+  .aipf-tips-level-name { color: var(--accent); }
+  .aipf-tips-list { margin: 0.6rem 0 0.7rem; padding-left: 1.2rem; font-family: var(--font-body); font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary); }
+  .aipf-tips-list li { margin: 0.2rem 0; }
+  .aipf-tips-estimate { font-family: var(--font-body); font-size: 0.72rem; color: var(--dim); margin: 0.5rem 0 0; }
 
   .aipf-projection-card { margin: 0.8rem 0 1rem; border: 1px solid var(--border); background: var(--bg-subtle); border-radius: 6px; padding: 0.75rem 0.85rem; }
   .aipf-projection-head { margin-bottom: 0.5rem; }
