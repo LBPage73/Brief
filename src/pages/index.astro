@@ -208,6 +208,23 @@ const structuredData = [
           </p>
         </div>
         <div class="aipf-verdict" id="aipf-headline" aria-live="polite"></div>
+        <div class="aipf-projection-card" id="aipf-projection-card">
+          <div class="aipf-projection-head">
+            <span class="aipf-projection-title">Your AI usage projection</span>
+          </div>
+          <div class="aipf-projection-body">
+            <div class="aipf-projection-selector" role="group" aria-label="Projection period">
+              <span class="aipf-projection-label">Period</span>
+              <div class="aipf-projection-buttons">
+                <button type="button" class="aipf-period is-active" data-period="day" aria-pressed="true">Day <span class="aipf-period-detail">1 day</span></button>
+                <button type="button" class="aipf-period" data-period="month" aria-pressed="false">Month <span class="aipf-period-detail">30 days</span></button>
+                <button type="button" class="aipf-period" data-period="year" aria-pressed="false">Year <span class="aipf-period-detail">365 days</span></button>
+              </div>
+            </div>
+            <div class="aipf-projection-total" id="aipf-projection-total" aria-live="polite"></div>
+            <p class="aipf-projection-note">Month represents 30 days.</p>
+          </div>
+        </div>
         <div class="aipf-mini">
           <p class="aipf-chart-title">A day of your AI use vs. everyday things</p>
           <p class="aipf-mini-h" id="aipf-daily-sub"></p>
@@ -609,9 +626,10 @@ const structuredData = [
 
     const GAL_TO_L = 3.785411784;
     const DAYS = 365;
+    const PROJECTION_DAYS = { day: 1, month: 30, year: 365 };
 
     let uidSeq = 1;
-    const state = { rows: [], metric: 'carbon', loc: 'us', home: 'med', drive: 'davg', diet: 'avg', fly: 'some', preset: 'moderate' };
+    const state = { rows: [], metric: 'carbon', loc: 'us', home: 'med', drive: 'davg', diet: 'avg', fly: 'some', preset: 'moderate', period: 'day' };
 
     let root = null;
     const getModel = (id) => MODELS.find((m) => m.id === id) || MODELS[0];
@@ -905,6 +923,24 @@ const structuredData = [
       else box.textContent = 'Water is blue water only: freshwater drawn from rivers, lakes, and aquifers. Green rainwater (most of food’s footprint) is excluded.';
     }
 
+    function renderProjection() {
+      const box = root.querySelector('#aipf-projection-total');
+      const total = aiDaily(state.metric);
+      const days = PROJECTION_DAYS[state.period] || 1;
+      const projected = total * days;
+      const label = state.period === 'month' ? 'Month (30 days)' : state.period === 'year' ? 'Year (365 days)' : 'Day (1 day)';
+      if (!box) return;
+      box.innerHTML = '<span class="aipf-projection-value">' + fmtMetric(projected) + '</span><span class="aipf-projection-period-text">' + label + '</span>';
+    }
+
+    function renderProjectionButtons() {
+      root.querySelectorAll('[data-period]').forEach((button) => {
+        const on = button.dataset.period === state.period;
+        button.classList.toggle('is-active', on);
+        button.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
     function renderWords() {
       const box = root.querySelector('#aipf-words');
       const wd = dailyWords(), cd = dailyCodeLines();
@@ -976,7 +1012,7 @@ const structuredData = [
     }
 
     function updateOutputs() {
-      renderRunning(); updateRowMeta(); renderHeadline(); renderGridNote(); renderWords(); renderDaily(); renderAnnualSplit(); renderPresetToggle();
+      renderRunning(); updateRowMeta(); renderHeadline(); renderGridNote(); renderWords(); renderDaily(); renderAnnualSplit(); renderProjection(); renderProjectionButtons(); renderPresetToggle();
     }
     // ---- Cited report ----
     function escXml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -1102,6 +1138,7 @@ const structuredData = [
       root.querySelector('#aipf-diet').addEventListener('change', (e) => { state.diet = e.target.value; updateOutputs(); });
       root.querySelector('#aipf-fly').addEventListener('change', (e) => { state.fly = e.target.value; updateOutputs(); });
       root.querySelectorAll('.aipf-metric').forEach((b) => { b.addEventListener('click', () => { state.metric = b.dataset.metric; renderMetricToggle(); updateOutputs(); }); });
+      root.querySelectorAll('[data-period]').forEach((b) => { b.addEventListener('click', () => { state.period = b.dataset.period; renderProjectionButtons(); updateOutputs(); }); });
       root.querySelectorAll('[data-preset]').forEach((b) => { b.addEventListener('click', () => applyPreset(b.dataset.preset)); });
     }
     function init() {
@@ -1253,6 +1290,24 @@ const structuredData = [
   .aipf-prop-fill { height: 100%; background: var(--accent); min-width: 3px; }
   .aipf-prop-cap { display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--dim); margin-top: 0.35rem; }
   .aipf-prop-cap .accent { color: var(--accent); font-weight: 600; }
+
+  .aipf-projection-card { margin: 0.8rem 0 1rem; border: 1px solid var(--border); background: var(--bg-subtle); border-radius: 6px; padding: 0.75rem 0.85rem; }
+  .aipf-projection-head { margin-bottom: 0.5rem; }
+  .aipf-projection-title { font-family: var(--font-body); font-size: 0.8rem; font-weight: 700; color: var(--text); letter-spacing: 0.04em; text-transform: uppercase; }
+  .aipf-projection-body { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+  .aipf-projection-selector { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; }
+  .aipf-projection-label { font-family: var(--font-body); font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  .aipf-projection-buttons { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+  .aipf-period { background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-secondary); border-radius: 6px; padding: 0.34rem 0.7rem; font-family: var(--font-body); font-size: 0.78rem; cursor: pointer; transition: background-color 0.12s, color 0.12s, border-color 0.12s; }
+  .aipf-period-detail { font-size: 0.72rem; color: var(--dim); margin-left: 0.2rem; }
+  .aipf-period:hover { color: var(--accent); border-color: var(--accent); }
+  .aipf-period.is-active { background: var(--accent); color: var(--bg-elevated); border-color: var(--accent); font-weight: 700; }
+  .aipf-period.is-active .aipf-period-detail { color: var(--bg-elevated); }
+  .aipf-period:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .aipf-projection-total { margin-left: auto; font-family: var(--font-body); color: var(--text); font-size: 0.84rem; text-align: right; }
+  .aipf-projection-value { display: block; color: var(--text); font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; }
+  .aipf-projection-period-text { display: block; font-size: 0.72rem; color: var(--dim); margin-top: 0.2rem; }
+  .aipf-projection-note { width: 100%; color: var(--dim); font-family: var(--font-body); font-size: 0.72rem; margin: 0.3rem 0 0; }
 
   .aipf-onepct { font-size: 0.88rem; line-height: 1.5; color: var(--text-secondary); margin: 0.85rem 0 0; }
   .aipf-fine { font-family: var(--font-body); font-size: 0.7rem; line-height: 1.45; color: var(--dim); margin: 0.7rem 0 0; }
