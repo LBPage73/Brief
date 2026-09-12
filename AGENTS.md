@@ -32,4 +32,24 @@ When user directs agent to save transcript, save entire text of current session 
 
 # Project
 
-Fill in as the project takes shape: how to run it locally, how to test it, and any commands or structure that aren't obvious from the code.
+This is an Astro-based customized AI Footprint Calculator.
+
+Install dependencies on Windows PowerShell with:
+
+npm.cmd install
+
+Run locally with:
+
+npm.cmd run dev
+
+Create a production build with:
+
+npm.cmd run build
+
+The main calculator page and all three custom features are in src/pages/index.astro.
+
+The three features are usage presets, daily/monthly/yearly projections, and responsive environmental tips.
+
+Manual browser testing should cover all three presets, all projection periods in Carbon and Water modes, changing prompt counts, and checking that the tips update.
+
+AGENTS.md and CLAUDE.md must remain in the project.
